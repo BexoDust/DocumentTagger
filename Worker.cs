@@ -32,7 +32,7 @@ namespace DocumentTagger
 
             foreach (var location in _options.WatchedLocations)
             {
-                _monitorList.Add(new FolderMonitor(location, _options.DefaultProcessedSucces, ruleList, _logger));
+                _monitorList.Add(new FolderMonitor(location, _options.DefaultProcessedSuccess, ruleList, _logger));
             }
 
             while (!stoppingToken.IsCancellationRequested)

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Media;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -129,7 +128,7 @@ namespace DocumentTagger
             fileName += GetLetterSubject(content);
             fileName += $"{extension}";
 
-            return fileName;
+            return Path.Combine(Path.GetDirectoryName(filePath), fileName);
         }
 
         private static string GetLetterSubject(string content)
@@ -209,10 +208,7 @@ namespace DocumentTagger
 
                 foreach (var location in rule.MoveLocations)
                 {
-                    if (Directory.Exists(location))
-                    {
-                        result.Add(location);
-                    }
+                    result.Add(location);
                 }
             }
 
@@ -220,13 +216,14 @@ namespace DocumentTagger
 
             if (result.Count > 0)
             {
-                foreach (var loc in result)
+                foreach (var subFolder in result)
                 {
-                    File.Copy(filePath, GetUniqueNameInFolder(loc, fileName));
+                    var newPath = Path.Combine(Path.GetDirectoryName(filePath), subFolder);
+                    Directory.CreateDirectory(newPath);
+                    File.Copy(filePath, GetUniqueNameInFolder(newPath, fileName));
                 }
 
                 File.Delete(filePath);
-                SystemSounds.Asterisk.Play();
             }
 
             return result;

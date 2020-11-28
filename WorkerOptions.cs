@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace DocumentTagger
 {
@@ -8,8 +6,6 @@ namespace DocumentTagger
     {
         public List<string> WatchedLocations { get; set; }
         public string ConfigPath { get; set; }
-        public string DefaultProcessedSucces { get; set; }
-        public string DefaultProcessedFail { get; set; }
-
+        public string DefaultProcessedSuccess { get; set; }
     }
 }

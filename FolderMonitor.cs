@@ -138,7 +138,7 @@ namespace DocumentTagger
                         string newPath = RuleManager.MoveToDefaultLocation(file, _defaultSuccessPath, newName);
                         var finalPaths = RuleManager.MoveToNewLocation(newPath, ruleSet);
 
-                        string message = $"New file name: {newName}{Environment.NewLine}New location: {String.Join(',', finalPaths)}{Environment.NewLine}";
+                        string message = $"New file name: {Path.GetFileName(newName)}{Environment.NewLine}New location: {String.Join(',', finalPaths)}{Environment.NewLine}";
 
                         if (finalPaths.Any(x => !String.IsNullOrEmpty(x)))
                         {
