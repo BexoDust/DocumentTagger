@@ -13,6 +13,7 @@ namespace DocumentTagger
         private static readonly string _docDateFormat = "yyyy-MM";
         private static List<(string regexRule, string dateFormat)> _dateFormats = new List<(string, string)>
         {
+            // the date only starts with the 2000 years to prevent the search from finding birth days (at least from adults)
             (@"(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) 20\d{2}", "MMMM yyyy"), // Januar 2010
             (@"\s\d{2}\/20\d{2}", " MM/yyyy"), // 01/2010
             (@"\d{2}\. \w{3} 20\d{2}", "dd. MMM yyyy"), // 20. Jan 2010
@@ -33,9 +34,9 @@ namespace DocumentTagger
              @"((.*\n))Guten Tag "
         };
 
-        public static List<Tag> GetApplicableRules(string fileContent, List<Tag> allRules)
+        public static List<Rule> GetApplicableRules(string fileContent, List<Rule> allRules)
         {
-            List<Tag> fittingRules = new List<Tag>();
+            List<Rule> fittingRules = new List<Rule>();
 
             if (String.IsNullOrWhiteSpace(fileContent))
             {
@@ -53,7 +54,7 @@ namespace DocumentTagger
             return fittingRules;
         }
 
-        private static bool DoesRuleApply(string fileContent, Tag rule)
+        private static bool DoesRuleApply(string fileContent, Rule rule)
         {
             bool? result = null;
             bool multiMay = rule.Keywords.Any() && rule.Keywords.All(x => x.Modifier != KeyMod.MAY_INCLUDE);
@@ -111,7 +112,7 @@ namespace DocumentTagger
             return dateString;
         }
 
-        public static string GetNewFileName(string filePath, string documentDate, string content, List<Tag> rules)
+        public static string GetNewFileName(string filePath, string documentDate, string content, List<Rule> rules)
         {
             string extension = Path.GetExtension(filePath);
             string fileName = documentDate;
@@ -154,7 +155,7 @@ namespace DocumentTagger
             return r.Replace(filename.Trim(), String.Empty);
         }
 
-        public static string MoveToDefaultLocation(string filePath, string defaultLocation, string newName)
+        public static string MoveToSuccessFolder(string filePath, string successFolder, string newName)
         {
             string newFilePath = String.Empty;
 
@@ -163,33 +164,39 @@ namespace DocumentTagger
                 return null;
             }
 
-            if (Directory.Exists(defaultLocation))
+            if (Directory.Exists(successFolder))
             {
-                newFilePath = GetUniqueNameInFolder(defaultLocation, newName);
+                var name = string.IsNullOrWhiteSpace(newName) ? Path.GetFileName(filePath) : newName;
+                newFilePath = GetUniqueNameInFolder(successFolder, name);
 
-                int maxTryCount = 3;
-                int tries = 0;
-                bool success = false;
-
-                while (!success || tries < maxTryCount)
-                {
-                    try
-                    {
-                        tries++;
-                        File.Move(filePath, newFilePath);
-                        success = true;
-                    }
-                    catch (IOException)
-                    {
-                        Thread.Sleep(500);
-                    }
-                }
+                TryMoveFile(filePath, newFilePath);
             }
 
             return newFilePath;
         }
 
-        public static List<string> MoveToNewLocation(string filePath, List<Tag> rules)
+        public static void TryMoveFile(string filePath, string newFilePath)
+        {
+            int maxTryCount = 3;
+            int tries = 0;
+            bool success = false;
+
+            while (!success || tries < maxTryCount)
+            {
+                try
+                {
+                    tries++;
+                    File.Move(filePath, newFilePath);
+                    success = true;
+                }
+                catch (IOException)
+                {
+                    Thread.Sleep(500);
+                }
+            }
+        }
+
+        public static List<string> MoveToTargetLocations(string filePath, string successFolder, List<Rule> rules)
         {
             var result = new List<string>();
 
@@ -201,12 +208,12 @@ namespace DocumentTagger
 
             foreach (var rule in rules)
             {
-                if (rule.MoveLocations == null)
+                if (rule.Results == null)
                 {
                     continue;
                 }
 
-                foreach (var location in rule.MoveLocations)
+                foreach (var location in rule.Results)
                 {
                     result.Add(location);
                 }
@@ -218,30 +225,41 @@ namespace DocumentTagger
             {
                 foreach (var subFolder in result)
                 {
-                    var newPath = Path.Combine(Path.GetDirectoryName(filePath), subFolder);
+                    var newPath = Path.Combine(successFolder, subFolder);
                     Directory.CreateDirectory(newPath);
                     File.Copy(filePath, GetUniqueNameInFolder(newPath, fileName));
                 }
 
-                File.Delete(filePath);
             }
-
-            return result;
-        }
-
-        private static string ApplyTagName(string fileName, Tag rule)
-        {
-            string result = fileName;
-
-            if (!String.IsNullOrWhiteSpace(rule.AddedFileWord) && !fileName.Contains(rule.AddedFileWord))
+            else
             {
-                result = $"{fileName} {rule.AddedFileWord}";
+                File.Copy(filePath, GetUniqueNameInFolder(successFolder, fileName));
             }
+
+            File.Delete(filePath);
 
             return result;
         }
 
-        private static string GetUniqueNameInFolder(string path, string nameWithExt)
+        private static string ApplyTagName(string fileName, Rule rule)
+        {
+            string finalName = fileName;
+
+            if (rule.Results.Any())
+            {
+                foreach (var result in rule.Results)
+                {
+                    if (!fileName.Contains(result))
+                    {
+                        finalName = $"{fileName} {result}";
+                    }
+                }
+            }
+
+            return finalName;
+        }
+
+        public static string GetUniqueNameInFolder(string path, string nameWithExt)
         {
             string extension = Path.GetExtension(nameWithExt);
             string name = Path.GetFileNameWithoutExtension(nameWithExt);

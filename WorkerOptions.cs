@@ -1,11 +1,20 @@
-﻿using System.Collections.Generic;
-
-namespace DocumentTagger
+﻿namespace DocumentTagger
 {
     public class WorkerOptions
     {
-        public List<string> WatchedLocations { get; set; }
-        public string ConfigPath { get; set; }
-        public string DefaultProcessedSuccess { get; set; }
+        public string WatchRename { get; set; }
+        public string WatchCompress { get; set; }
+        public string WatchMove { get; set; }
+
+        public string FolderRenameSuccess { get; set; }
+        public string FolderCompressSuccess { get; set; }
+        public string FolderMoveSuccess { get; set; }
+
+        public string RenameRulePath { get; set; }
+        public string MoveRulePath { get; set; }
+        public string LogPath { get; set; }
+
+        public string CompressorToolPath { get; set; }
+        public string CompressorToolOptions { get; set; }
     }
 }

@@ -14,26 +14,31 @@ namespace DocumentTagger
         private readonly ILogger<Worker> _logger;
         private readonly WorkerOptions _options;
 
-        private readonly List<FolderMonitor> _monitorList;
-        private readonly ConfigMonitor _configMonitor;
+        private readonly List<AFolderMonitor> _monitorList;
+        private readonly ConfigMonitor _renameRulesMonitor;
+        private readonly ConfigMonitor _moveRulesMonitor;
 
         public Worker(ILogger<Worker> logger, WorkerOptions options)
         {
             _logger = logger;
             _options = options;
-            _monitorList = new List<FolderMonitor>();
-            _configMonitor = new ConfigMonitor(_options.ConfigPath);
-            _configMonitor.FileChanged += FileChangedCallback;
+            _monitorList = new List<AFolderMonitor>();
+
+            _renameRulesMonitor = new ConfigMonitor(_options.RenameRulePath);
+            _renameRulesMonitor.FileChanged += RenameRulesChangedCallback;
+            _moveRulesMonitor = new ConfigMonitor(_options.MoveRulePath);
+            _moveRulesMonitor.FileChanged += MoveRulesChangedCallback;
         }
-        
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var ruleList = GetRules();
+            var renameRuleList = GetRules(_options.RenameRulePath);
+            var moveRuleList = GetRules(_options.MoveRulePath);
 
-            foreach (var location in _options.WatchedLocations)
-            {
-                _monitorList.Add(new FolderMonitor(location, _options.DefaultProcessedSuccess, ruleList, _logger));
-            }
+            _monitorList.Add(new RenameFolderMonitor(_options.WatchRename, _options.FolderRenameSuccess, renameRuleList, _logger));
+            _monitorList.Add(new CompressFolderMonitor(_options.WatchCompress, _options.FolderCompressSuccess,
+                _options.CompressorToolPath, _options.CompressorToolOptions, _logger));
+            _monitorList.Add(new MoveFolderMonitor(_options.WatchMove, _options.FolderMoveSuccess, moveRuleList, _logger));
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -41,32 +46,55 @@ namespace DocumentTagger
                 await Task.Delay(1000, stoppingToken);
             }
 
-            foreach(var monitor in _monitorList)
+            _logger.LogInformation("Stopping monitors");
+            foreach (var monitor in _monitorList)
             {
                 monitor.Stop();
             }
         }
 
-        private List<Tag> GetRules()
+        private List<Rule> GetRules(string rulePath)
         {
-            var ruleList = JsonIo.ReadObjectFromJsonFile<List<Tag>>(_options.ConfigPath);
+            var ruleList = JsonIo.ReadObjectFromJsonFile<List<Rule>>(rulePath);
 
             return ruleList;
         }
 
-        private void FileChangedCallback(object sender, FileSystemEventArgs e)
+        private void RenameRulesChangedCallback(object sender, FileSystemEventArgs e)
         {
             if (File.Exists(e.FullPath))
             {
-                _logger.LogInformation("Config changed: {0}", e.Name);
+                _logger.LogInformation("Rename rules changed: {0}", e.Name);
 
-                var rules = GetRules();
+                var rules = GetRules(_options.RenameRulePath);
 
                 if (rules != null)
                 {
-                    foreach (var monitor in _monitorList)
+                    var renameMonitors = _monitorList.Select(y => y as RenameFolderMonitor);
+
+                    foreach (var monitor in renameMonitors)
                     {
-                        monitor.UpdateRules(rules);
+                        monitor?.UpdateRules(rules);
+                    }
+                }
+            }
+        }
+
+        private void MoveRulesChangedCallback(object sender, FileSystemEventArgs e)
+        {
+            if (File.Exists(e.FullPath))
+            {
+                _logger.LogInformation("Move rules changed: {0}", e.Name);
+
+                var rules = GetRules(_options.MoveRulePath);
+
+                if (rules != null)
+                {
+                    var moveMonitors = _monitorList.Select(y => y as MoveFolderMonitor);
+
+                    foreach (var monitor in moveMonitors)
+                    {
+                        monitor?.UpdateRules(rules);
                     }
                 }
             }
