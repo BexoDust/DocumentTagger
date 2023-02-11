@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocumentTagger", "DocumentTagger.csproj", "{F7CD0C8D-D474-4A0D-9A0D-58A8BBE5E8FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocumentTagger", "DocumentTagger/DocumentTagger.csproj", "{F7CD0C8D-D474-4A0D-9A0D-58A8BBE5E8FF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocumentTaggerTests", "..\DocumentTaggerTests\DocumentTaggerTests.csproj", "{E4299975-A275-4AD9-8748-7A4737F8699E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocumentTaggerTests", "DocumentTaggerTests\DocumentTaggerTests.csproj", "{E4299975-A275-4AD9-8748-7A4737F8699E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocCompressor", "..\DocCompressor\DocCompressor.csproj", "{BD1EB688-AA3C-4666-B037-46557563418A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocCompressor", "DocCompressor\DocCompressor.csproj", "{BD1EB688-AA3C-4666-B037-46557563418A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumentTaggerCore", "..\DocumentTaggerCore\DocumentTaggerCore.csproj", "{FCEAA2F0-4614-4A61-BE06-1F8D955248C3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumentTaggerCore", "DocumentTaggerCore\DocumentTaggerCore.csproj", "{FCEAA2F0-4614-4A61-BE06-1F8D955248C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,0 +1,40 @@
+[
+  {
+    "Keywords": [
+      {
+        "Item1": "Ei",
+        "Item2": 0
+      },
+      {
+        "Item1": "Papa",
+        "Item2": 0
+      }
+    ],
+    "Name": "TestTag 1",
+    "MoveLocations": [
+      "D:\\Data\\Dev0",
+      "C:\\"
+    ],
+    "MovePriority": 5,
+    "AddedFileWord": "Bau"
+  },
+  {
+    "Keywords": [
+      {
+        "Item1": "Ei",
+        "Item2": 0
+      },
+      {
+        "Item1": "Papa",
+        "Item2": 0
+      }
+    ],
+    "Name": "TestTag 2",
+    "MoveLocations": [
+      "D:\\Data\\Dev0",
+      "C:\\"
+    ],
+    "MovePriority": 5,
+    "AddedFileWord": "Bau"
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DocCompressor": {
+      "commandName": "Project",
+      "commandLineArgs": "-s \"D:\\Nextcloud\\Dokumente\\Wohnen\" -t \"D:\\Daten\\ComDoc\\Wohnen\""
+    }
+  }
+}
