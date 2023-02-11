@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using DocumentTaggerCore;
+using DocumentTaggerCore.Model;
 
 namespace DocumentTagger
 {
@@ -251,7 +253,7 @@ namespace DocumentTagger
                 {
                     if (!fileName.Contains(result))
                     {
-                        finalName = $"{fileName} {result}";
+                        finalName = $"{finalName} {result}";
                     }
                 }
             }

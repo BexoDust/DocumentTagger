@@ -45,6 +45,7 @@ namespace DocumentTagger
 
                             if (newSize > oldSize)
                             {
+                                File.Delete(targetFile);
                                 RuleManager.TryMoveFile(file, targetFile);
                                 string message = $"Not Compressed: compressed size for {Path.GetFileName(file)} would've been bigger ({(newSize / (double)oldSize):P})";
                                 _logger.LogWarning(message);

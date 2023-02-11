@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <UserSecretsId>dotnet-DocumentTagger-98B89F40-F43D-427D-9AF5-36BB3D41CBF6</UserSecretsId>
   </PropertyGroup>
 
@@ -12,5 +12,9 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="System.Windows.Extensions" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DocumentTaggerCore\DocumentTaggerCore.csproj" />
   </ItemGroup>
 </Project>
