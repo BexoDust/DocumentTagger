@@ -4,11 +4,22 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:DocumentOrganizer"
-    Shell.FlyoutBehavior="Disabled">
+    xmlns:views="clr-namespace:DocumentOrganizer.Views"
+    Shell.FlyoutBehavior="Disabled" Title="Document Tagger">
 
+    <TabBar>
+        <Tab Title="Folder" Icon="folder_icon.svg">
+            <ShellContent ContentTemplate="{DataTemplate views:FolderView}" />
+        </Tab>
+        <Tab Title="Rules" Icon="rule.svg">
+            <ShellContent ContentTemplate="{DataTemplate views:RuleEditorView}" />
+        </Tab>
+    </TabBar>
+    <!--<views:FolderView Title="Folder" IconImageSource="folder_icon.svg" BindingContext="{Binding FolderViewModel}" />
+    <views:RuleEditorView Title="Rules" IconImageSource="rule.svg" BindingContext="{Binding RuleViewModel}" />
     <ShellContent
         Title="Home"
         ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Route="MainPage" />-->
 
 </Shell>

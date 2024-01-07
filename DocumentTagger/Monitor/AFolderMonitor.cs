@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DocumentTagger
@@ -69,6 +70,16 @@ namespace DocumentTagger
         {
             lock (_lock)
             {
+                var tries = 0;
+                while (IsFileLocked(filePath) || tries < 10)
+                {
+                    Thread.Sleep(500);
+                    tries++;
+                }
+
+                if (tries == 10)
+                    _logger.LogWarning($"{this.GetType().Name}: File {filePath} still locked after {tries} tries.");
+
                 if (!_inputQueue.Contains(filePath) && File.Exists(filePath))
                 {
                     AddBreakLine();
@@ -105,6 +116,29 @@ namespace DocumentTagger
                     _logger.LogError(ex, "Error while handling changed file: " + ex.Message);
                 }
             }
+        }
+
+        protected virtual bool IsFileLocked(string filePath)
+        {
+            try
+            {
+                var fileInfo = new FileInfo(filePath);
+                using (FileStream stream = fileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.None))
+                {
+                    stream.Close();
+                }
+            }
+            catch (IOException)
+            {
+                //the file is unavailable because it is:
+                //still being written to
+                //or being processed by another thread
+                //or does not exist (has already been processed)
+                return true;
+            }
+
+            //file is not locked
+            return false;
         }
 
         protected abstract void ConsumeNewFile();

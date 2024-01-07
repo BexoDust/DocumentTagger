@@ -1,6 +1,8 @@
-﻿namespace DocumentTaggerCore.Model
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+
+namespace DocumentTaggerCore.Model
 {
-    public class KeyWord
+    public partial class KeyWord : ObservableObject
     {
 
         public KeyWord(string key, string mod)
@@ -9,8 +11,12 @@
             Modifier = mod;
         }
 
-        public string Key { get; set; }
+        [ObservableProperty]
+        private string _key;
 
-        public string Modifier { get; set; }
+        [ObservableProperty]
+        private string _modifier;
+
+        public override string ToString() => $"{Key} - {Modifier}"; 
     }
 }

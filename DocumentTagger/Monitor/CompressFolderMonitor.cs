@@ -7,10 +7,10 @@ namespace DocumentTagger
 {
     public class CompressFolderMonitor : AFolderMonitor
     {
-        private object _lock = new object();
+        private readonly object _lock = new();
 
-        private string _compressorToolPath;
-        private string _compressorToolOptions;
+        private readonly string _compressorToolPath;
+        private readonly string _compressorToolOptions;
 
         public CompressFolderMonitor(string watchedFolder, string processedSuccess,
             string compresorToolPath, string compressorToolOptions, ILogger<Worker> logger)
@@ -28,16 +28,37 @@ namespace DocumentTagger
             {
                 lock (_lock)
                 {
-                    if (File.Exists(file))
+                    try
                     {
+                        if (!File.Exists(file))
+                        {
+                            _logger.LogWarning($"{nameof(CompressFolderMonitor)}: File from queue does not exist: {file}");
+                            continue;
+                        }
+
                         var oldSize = new FileInfo(file).Length;
                         var targetFile = file.Replace(_watchedFolder, _successFolder);
                         var options = String.Format(_compressorToolOptions, targetFile, file);
-                        var process = Process.Start(_compressorToolPath, options);
+                        var info = new ProcessStartInfo(_compressorToolPath)
+                        {
+                            Arguments = options,
+                            UseShellExecute = false,
+                            RedirectStandardError = true,
+                            RedirectStandardInput = true,
+                            RedirectStandardOutput = true,
+                            CreateNoWindow = true,
+                            ErrorDialog = false,
+                            WindowStyle = ProcessWindowStyle.Hidden
+                        };
+
+                        _logger.LogWarning($"{nameof(CompressFolderMonitor)}: Starting compressor");
+                        var process = Process.Start(info);
 
                         targetFile = RuleManager.GetUniqueNameInFolder(Path.GetDirectoryName(targetFile), targetFile);
 
+                        _logger.LogWarning($"{nameof(CompressFolderMonitor)}: Waiting for compressor");
                         process.WaitForExit();
+                        _logger.LogWarning($"{nameof(CompressFolderMonitor)}: Compressor finished");
 
                         if (File.Exists(targetFile))
                         {
@@ -62,6 +83,10 @@ namespace DocumentTagger
                         {
                             _logger.LogError($"Compressed file {targetFile} not found.");
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Failed to compress the file {file}: {ex}");
                     }
                 }
             }

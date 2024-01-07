@@ -1,8 +1,10 @@
+using DocumentTaggerCore.Model;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Configuration;
+using Microsoft.Extensions.Logging.EventLog;
 using Serilog;
 
 namespace DocumentTagger
@@ -32,6 +34,12 @@ namespace DocumentTagger
 #endif
                     });
 
+                    LoggerProviderOptions.RegisterProviderOptions<EventLogSettings, EventLogLoggerProvider>(services);
+
+                    services.AddWindowsService(options =>
+                    {
+                        options.ServiceName = "Document Tagger Service";
+                    });
                     services.AddSingleton(options);
                     services.AddHostedService<Worker>();
                 });

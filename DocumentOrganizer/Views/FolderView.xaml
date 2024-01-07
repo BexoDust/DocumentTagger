@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:DocumentOrganizer.Views"
+             xmlns:viewModel="clr-namespace:DocumentOrganizer.ViewModel"
+             xmlns:model="clr-namespace:DocumentOrganizer.Model"
+             xmlns:syncfusion="clr-namespace:Syncfusion.Maui.TreeView;assembly=Syncfusion.Maui.TreeView"
+             xmlns:pdf="clr-namespace:Syncfusion.Maui.PdfViewer;assembly=Syncfusion.Maui.PdfViewer"  
+             x:Class="DocumentOrganizer.Views.FolderView"
+             x:DataType="viewModel:FolderViewModel">
+    <ContentPage.Resources>
+        <DataTemplate x:Key="ItemTemplate" x:DataType="model:Folder">
+            <Grid RowSpacing="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Column="0">
+                    <Image Source="{Binding ImageIcon}"
+                           VerticalOptions="Center"
+                           HorizontalOptions="Center"
+                           HeightRequest="24" 
+                           WidthRequest="24"/>
+                </Grid>
+                <Grid Grid.Column="1">
+                    <Label LineBreakMode="NoWrap" Text="{Binding Name}" VerticalTextAlignment="Center" />
+                </Grid>
+            </Grid>
+        </DataTemplate>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+        <Grid RowDefinitions="*, 60" ColumnDefinitions="*,*,*">
+            <syncfusion:SfTreeView x:Name="ScanFolder" Grid.Row="0" Grid.Column="0" ItemsSource="{Binding ScanFolder}" ChildPropertyName="SubFolders"
+                                   ItemTemplate="{StaticResource ItemTemplate}" AutoExpandMode="RootNodesExpanded" 
+                                   SelectedItem="{Binding SelectedFolder, Mode=TwoWay}" Indentation="15" ItemHeight="32"
+                                   ItemDoubleTapped="SfTreeView_ItemDoubleTapped" />
+
+            <Button Grid.Row="1" Grid.Column="0" Text="Rebuild Folders" Margin="5" HeightRequest="30"
+                    Command="{Binding CopyFolderStructureFromTargetToScanCommand}" />
+
+            <syncfusion:SfTreeView x:Name="TargetFolder" Grid.Column="1" ItemsSource="{Binding TargetFolder}" ChildPropertyName="SubFolders"
+                                   ItemTemplate="{StaticResource ItemTemplate}" AutoExpandMode="RootNodesExpanded" 
+                                   SelectedItem="{Binding SelectedFolder, Mode=TwoWay}" Indentation="15" ItemHeight="32"
+                                   ItemDoubleTapped="SfTreeView_ItemDoubleTapped" />
+
+            <pdf:SfPdfViewer x:Name="PdfViewer" Grid.Row="0" Grid.RowSpan="2" Grid.Column="2"
+                             DocumentSource="{Binding PdfFileStream}" EnableTextSelection="False" />
+
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

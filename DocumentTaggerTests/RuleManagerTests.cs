@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using DocumentTaggerCore.Model;
 using DocumentTaggerCore;
+using System.Collections.ObjectModel;
 
 namespace DocumentTagger.Tests
 {
@@ -15,22 +16,22 @@ namespace DocumentTagger.Tests
             var result = new List<Rule>();
 
             var rule = new Rule();
-            rule.Results = new List<string> { "Empty" };
+            rule.Results = new ObservableCollection<string> { "Empty" };
             result.Add(rule);
 
             rule = new Rule();
-            rule.Keywords = new List<KeyWord> { new KeyWord("First", KeyMod.MUST_INCLUDE) };
-            rule.Results = new List<string> { "First!" };
+            rule.Keywords = new ObservableCollection<KeyWord> { new KeyWord("First", KeyMod.MUST_INCLUDE) };
+            rule.Results = new ObservableCollection<string> { "First!" };
             result.Add(rule);
 
             rule = new Rule();
-            rule.Keywords = new List<KeyWord> { new KeyWord("Second", KeyMod.MAY_INCLUDE), new KeyWord("Third", KeyMod.MAY_INCLUDE) };
-            rule.Results = new List<string> { "D:\\" };
+            rule.Keywords = new ObservableCollection<KeyWord> { new KeyWord("Second", KeyMod.MAY_INCLUDE), new KeyWord("Third", KeyMod.MAY_INCLUDE) };
+            rule.Results = new ObservableCollection<string> { "D:\\" };
             result.Add(rule);
 
             rule = new Rule();
-            rule.Keywords = new List<KeyWord> { new KeyWord("Alpha", KeyMod.MUST_INCLUDE), new KeyWord("Beta", KeyMod.MAY_INCLUDE), new KeyWord("Gamma", KeyMod.MAY_INCLUDE) };
-            rule.Results = new List<string> { "D:\\" };
+            rule.Keywords = new ObservableCollection<KeyWord> { new KeyWord("Alpha", KeyMod.MUST_INCLUDE), new KeyWord("Beta", KeyMod.MAY_INCLUDE), new KeyWord("Gamma", KeyMod.MAY_INCLUDE) };
+            rule.Results = new ObservableCollection<string> { "D:\\" };
             result.Add(rule);
 
             return result;
