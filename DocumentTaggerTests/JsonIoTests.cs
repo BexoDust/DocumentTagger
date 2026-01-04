@@ -2,6 +2,7 @@
 using DocumentTaggerCore.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 
@@ -14,8 +15,8 @@ namespace DocumentTagger.Tests
         {
             var result = new Rule();
 
-            result.Results = new List<string> { "Bau " + i, "Aua" };
-            result.Keywords = new List<KeyWord> { new KeyWord("Ei", KeyMod.MAY_INCLUDE), new KeyWord("Papa", KeyMod.MAY_INCLUDE) };
+            result.Results = new ObservableCollection<string> { "Bau " + i, "Aua" };
+            result.Keywords = new ObservableCollection<KeyWord> { new KeyWord("Ei", KeyMod.MAY_INCLUDE), new KeyWord("Papa", KeyMod.MAY_INCLUDE) };
 
             return result;
         }
@@ -56,7 +57,7 @@ namespace DocumentTagger.Tests
         }
 
         [TestMethod()]
-        [DeploymentItem("TestFiles")]
+        //[DeploymentItem("TestFiles")]
         public void DeserializeMultipleTagsTest()
         {
             string testFile = "TestFiles\\ExampleRules.json";

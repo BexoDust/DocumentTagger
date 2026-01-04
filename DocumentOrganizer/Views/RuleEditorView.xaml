@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:DocumentOrganizer.Views"
+             xmlns:viewModel="clr-namespace:DocumentOrganizer.ViewModel"
+             xmlns:core="clr-namespace:DocumentTaggerCore.Model;assembly=DocumentTaggerCore"
+             xmlns:syncfusion="clr-namespace:Syncfusion.Maui.DataGrid;assembly=Syncfusion.Maui.DataGrid"
+             xmlns:chip="clr-namespace:Syncfusion.Maui.Core;assembly=Syncfusion.Maui.Core"
+             x:Class="DocumentOrganizer.Views.RuleEditorView"
+             x:DataType="viewModel:RuleEditorViewModel">
+
+    <Grid RowDefinitions="40,*" ColumnDefinitions="2*,*,*">
+        <Grid RowDefinitions="33,*" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" ColumnDefinitions="*,*">
+            <StackLayout Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+                <Button Text="+" FontAttributes="Bold" Command="{Binding AddNewKeywordCommand}" />
+                <Button Text="-" FontAttributes="Bold" Command="{Binding RemoveKeywordCommand}" />
+            </StackLayout>
+
+            <StackLayout Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+                <Button Text="+" FontAttributes="Bold" Command="{Binding AddNewResultCommand}" />
+                <Button Text="-" FontAttributes="Bold" Command="{Binding RemoveResultCommand}" />
+            </StackLayout>
+            <!--<syncfusion:SfDataGrid Grid.Row="1" Grid.Column="0" ItemsSource="{Binding SelectedRule.Keywords}"
+                                   SelectedRow="{Binding SelectedKeyword}" AutoGenerateColumnsMode="None"
+                                   SelectionMode="Single" Margin="5" HorizontalOptions="Fill">
+                <syncfusion:SfDataGrid.Columns>
+                    <syncfusion:DataGridTemplateColumn HeaderText="Key" ColumnWidthMode="Fill">
+                        <syncfusion:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Editor Text="{Binding Key}" />
+                            </DataTemplate>
+                        </syncfusion:DataGridTemplateColumn.CellTemplate>
+                    </syncfusion:DataGridTemplateColumn>
+                    <syncfusion:DataGridTemplateColumn HeaderText="Modifier" Width="100">
+                        <syncfusion:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Picker ItemsSource="{Binding Path=KeyTypes, Mode=OneTime, Source={RelativeSource AncestorType={x:Type viewModel:RuleEditorViewModel}}}" 
+                                        SelectedItem="{Binding Modifier, Mode=TwoWay}" />
+                            </DataTemplate>
+                        </syncfusion:DataGridTemplateColumn.CellTemplate>
+                    </syncfusion:DataGridTemplateColumn>
+                </syncfusion:SfDataGrid.Columns>
+            </syncfusion:SfDataGrid>-->
+
+            <chip:SfChipGroup Grid.Row="1" Grid.Column="0" ItemsSource="{Binding SelectedRule.Keywords}" 
+                              ChipPadding="8,8,0,0" ChipType="Input" HorizontalOptions="Start" VerticalOptions="Start">
+                <chip:SfChipGroup.InputView>
+                    <Entry Placeholder="Enter Result" Margin="10,10,0,0" VerticalOptions="Center" WidthRequest="110" />
+                </chip:SfChipGroup.InputView>
+                <chip:SfChipGroup.ItemTemplate>
+                    <DataTemplate x:DataType="core:KeyWord">
+                        <Grid ColumnDefinitions="*,2,80,2,40">
+                            <Entry Grid.Column="0" Text="{Binding Key}" VerticalTextAlignment="Center" HorizontalTextAlignment="Center" />
+                            <BoxView Grid.Column="1" WidthRequest="1" Color="{StaticResource Gray400}"/>
+                            <Picker Grid.Column="2" ItemsSource="{Binding Path=KeyTypes, Mode=OneTime, Source={RelativeSource AncestorType={x:Type viewModel:RuleEditorViewModel}}}"
+                                    SelectedItem="{Binding Modifier, Mode=TwoWay}" />
+                            <BoxView Grid.Column="3" WidthRequest="1" Color="{StaticResource Gray400}"/>
+                            <Button Grid.Column="4" Text="X" Background="Transparent" Padding="0" TextColor="{StaticResource Gray600}" />
+                        </Grid>
+                    </DataTemplate>
+                </chip:SfChipGroup.ItemTemplate>
+                <chip:SfChipGroup.ChipLayout>
+                    <StackLayout Orientation="Vertical" />
+                </chip:SfChipGroup.ChipLayout>
+            </chip:SfChipGroup>
+
+            <!--<syncfusion:SfDataGrid Grid.Row="1" Grid.Column="1" ItemsSource="{Binding SelectedRule.Results, Mode=TwoWay}" 
+                                   SelectedRow="{Binding SelectedResult, Mode=TwoWay}" AutoGenerateColumnsMode="None" 
+                                   SelectionMode="Single" Margin="5" HorizontalOptions="FillAndExpand">
+                <syncfusion:SfDataGrid.DefaultStyle>
+                    <syncfusion:DataGridStyle HeaderRowBackground="#0074E3" HeaderRowTextColor="White" RowBackground="#AFD5FB" RowTextColor="#212121"/>
+                </syncfusion:SfDataGrid.DefaultStyle>
+                <syncfusion:SfDataGrid.Columns>
+                    <syncfusion:DataGridTextColumn HeaderText="Result" />
+                </syncfusion:SfDataGrid.Columns>
+            </syncfusion:SfDataGrid>-->
+
+            <chip:SfChipGroup Grid.Row="1" Grid.Column="1" ItemsSource="{Binding SelectedRule.Results, Mode=TwoWay}" HeightRequest="150"
+                              ChipPadding="8,8,0,0" ChipType="Input" HorizontalOptions="Start" VerticalOptions="Start">
+                <chip:SfChipGroup.InputView>
+                    <Entry x:Name="entry" Placeholder="Enter Result" Margin="10,10,0,0" VerticalOptions="Center" WidthRequest="110" />
+                </chip:SfChipGroup.InputView>
+                <!--<chip:SfChipGroup.ItemTemplate>
+                    <DataTemplate>
+                        <StackLayout Orientation="Horizontal">
+                            <Editor Text="Test" VerticalTextAlignment="Center" HorizontalTextAlignment="Center" />
+                            <Line BackgroundColor="{StaticResource Gray400}" />
+                            <Picker SelectedItem="May" />
+                        </StackLayout>
+                    </DataTemplate>
+                </chip:SfChipGroup.ItemTemplate>-->
+                <chip:SfChipGroup.ChipLayout>
+                    <FlexLayout HorizontalOptions="Start" VerticalOptions="Start" Wrap="Wrap" />
+                </chip:SfChipGroup.ChipLayout>
+            </chip:SfChipGroup>
+        </Grid>
+
+        <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" RowDefinitions="40,50,*" ColumnDefinitions="*,*">
+            <Label Grid.Row="0" Grid.Column="0" Text="Rename Rules" FontAttributes="Bold" Padding="5" Margin="5" />
+            <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 10,10,10,10">
+                <SearchBar  />
+            </Border>
+
+            <Button Grid.Row="1" Grid.Column="0" Text="+" HeightRequest="30" Command="{Binding AddNewRenameRuleCommand}" />
+            <Button Grid.Row="1" Grid.Column="1" Text="-" HeightRequest="30"  Command="{Binding RemoveRuleCommand}" />
+
+            <ListView Grid.Row="2" Grid.ColumnSpan="2" ItemsSource="{Binding RenameRules}" SelectedItem="{Binding SelectedRule}" />
+        </Grid>
+
+        <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" RowDefinitions="40,50,*" ColumnDefinitions="*,*">
+            <Label Grid.Row="0" Grid.Column="0" Text="Move Rules" FontAttributes="Bold" Padding="5" Margin="5" />
+            <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 10,10,10,10">
+                <SearchBar  />
+            </Border>
+
+            <Button Grid.Row="1" Grid.Column="0" Text="+" HeightRequest="30"  Command="{Binding AddNewMoveRuleCommand}" />
+            <Button Grid.Row="1" Grid.Column="1" Text="-" HeightRequest="30"  Command="{Binding RemoveRuleCommand}" />
+            <ListView Grid.Row="2" Grid.ColumnSpan="2" ItemsSource="{Binding MoveRules}" SelectedItem="{Binding SelectedRule}" />
+        </Grid>
+    </Grid>
+</ContentPage>

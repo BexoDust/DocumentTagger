@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using DocumentTagger.Monitor;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DocumentTagger
@@ -10,7 +12,7 @@ namespace DocumentTagger
     public abstract class AFolderMonitor
     {
         private readonly FileSystemWatcher _watcher;
-        private object _lock = new object();
+        private readonly object _lock = new();
         private DateTime _lastFoundFile;
 
         protected ILogger<Worker> _logger;
@@ -53,7 +55,7 @@ namespace DocumentTagger
 
             foreach (var file in files)
             {
-                this.DiscoverFiles(Path.GetFileName(file), file);
+                this.DiscoverFile(Path.GetFileName(file), file);
             }
         }
 
@@ -65,10 +67,29 @@ namespace DocumentTagger
             _watcher.EnableRaisingEvents = false;
         }
 
-        protected void DiscoverFiles(string fileName, string filePath)
+        protected void DiscoverFile(string fileName, string filePath)
         {
+            var maxTries = 10;
+
+            if (!File.Exists(filePath))
+                return;
+
             lock (_lock)
             {
+                var tries = 0;
+                while (IsFileLocked(filePath) && tries < maxTries)
+                {
+                    Thread.Sleep(500);
+                    tries++;
+                }
+
+                if (tries == maxTries)
+                {
+                    _logger.LogWarning($"{this.GetType().Name}: File {filePath} still locked after {tries} tries.");
+                    _logger.LogWarning($"{this.GetType().Name}: Skipped File {filePath}.");
+                    return;
+                }
+
                 if (!_inputQueue.Contains(filePath) && File.Exists(filePath))
                 {
                     AddBreakLine();
@@ -98,13 +119,39 @@ namespace DocumentTagger
             {
                 try
                 {
-                    this.DiscoverFiles(e.Name, e.FullPath);
+                    this.DiscoverFile(e.Name, e.FullPath);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error while handling changed file: " + ex.Message);
                 }
             }
+        }
+
+        protected virtual bool IsFileLocked(string filePath)
+        {
+                var list = FileUtil.WhoIsLocking(filePath);
+
+            try
+            {
+
+                var fileInfo = new FileInfo(filePath);
+                using (FileStream stream = fileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.None))
+                {
+                    stream.Close();
+                }
+            }
+            catch (IOException)
+            {
+                //the file is unavailable because it is:
+                //still being written to
+                //or being processed by another thread
+                //or does not exist (has already been processed)
+                return true;
+            }
+
+            //file is not locked
+            return false;
         }
 
         protected abstract void ConsumeNewFile();

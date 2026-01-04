@@ -1,4 +1,5 @@
-﻿using DocumentTaggerCore.Model;
+﻿using DocumentTaggerCore;
+using DocumentTaggerCore.Model;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.IO;
@@ -37,12 +38,19 @@ namespace DocumentTagger
 
                         var ruleSet = RuleManager.GetApplicableRules(text, _rules);
                         string docDate = RuleManager.GetDocumentDate(text);
-                        string newName = RuleManager.GetNewFileName(file, docDate, text, ruleSet);
+                        var newName = RuleManager.GetNewFileName(file, docDate, text, ruleSet);
 
-                        RuleManager.MoveToSuccessFolder(file, _successFolder, newName);
+                        var result = RuleManager.MoveToSuccessFolder(file, _successFolder, newName);
 
-                        string message = $"Renamed: {Path.GetFileName(file)} to {Path.GetFileName(newName)}";
-                        _logger.LogInformation(message);
+                        if (result != null)
+                        {
+                            string message = $"Renamed: {Path.GetFileName(file)} to {Path.GetFileName(newName)}";
+                            _logger.LogInformation(message);
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"{nameof(RenameFolderMonitor)}: Could not move file, because {file} was not found.");
+                        }
                     }
                 }
             }

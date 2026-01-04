@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Threading;
-using DocumentTaggerCore;
 using DocumentTaggerCore.Model;
 
-namespace DocumentTagger
+namespace DocumentTaggerCore
 {
     public class RuleManager
     {
@@ -40,7 +34,7 @@ namespace DocumentTagger
         {
             List<Rule> fittingRules = new List<Rule>();
 
-            if (String.IsNullOrWhiteSpace(fileContent))
+            if (string.IsNullOrWhiteSpace(fileContent))
             {
                 return fittingRules;
             }
@@ -114,7 +108,7 @@ namespace DocumentTagger
             return dateString;
         }
 
-        public static string GetNewFileName(string filePath, string documentDate, string content, List<Rule> rules)
+        public static string? GetNewFileName(string filePath, string documentDate, string content, List<Rule> rules)
         {
             string extension = Path.GetExtension(filePath);
             string fileName = documentDate;
@@ -131,7 +125,8 @@ namespace DocumentTagger
             fileName += GetLetterSubject(content);
             fileName += $"{extension}";
 
-            return Path.Combine(Path.GetDirectoryName(filePath), fileName);
+            var pathDirectory = Path.GetDirectoryName(filePath);
+            return pathDirectory != null ? Path.Combine(pathDirectory, fileName) : null;
         }
 
         private static string GetLetterSubject(string content)
@@ -147,19 +142,19 @@ namespace DocumentTagger
                 }
             }
 
-            return String.Empty;
+            return string.Empty;
         }
 
         private static string RemoveInvalidFilePathCharacters(string filename)
         {
             string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
             Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
-            return r.Replace(filename.Trim(), String.Empty);
+            return r.Replace(filename.Trim(), string.Empty);
         }
 
-        public static string MoveToSuccessFolder(string filePath, string successFolder, string newName)
+        public static string? MoveToSuccessFolder(string filePath, string successFolder, string? newName)
         {
-            string newFilePath = String.Empty;
+            string newFilePath = string.Empty;
 
             if (!File.Exists(filePath))
             {

@@ -1,20 +1,35 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <UserSecretsId>dotnet-DocumentTagger-98B89F40-F43D-427D-9AF5-36BB3D41CBF6</UserSecretsId>
+	<TargetFramework>net10.0</TargetFramework>
+	<UserSecretsId>dotnet-DocumentTagger-98B89F40-F43D-427D-9AF5-36BB3D41CBF6</UserSecretsId>
+	<ServerGarbageCollection>true</ServerGarbageCollection>
+	<OutputType>exe</OutputType>
+	<PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
+	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	<PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="itext7" Version="7.1.16" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="System.Windows.Extensions" Version="5.0.0" />
+	<PackageReference Include="itext" Version="9.2.0" />
+	<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.7" />
+	<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.7" />
+	<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	<PackageReference Include="Serilog.Extensions.Logging" Version="9.0.2" />
+	<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+	<PackageReference Include="System.Private.Uri" Version="4.3.2" />
+	<PackageReference Include="System.Windows.Extensions" Version="9.0.7" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DocumentTaggerCore\DocumentTaggerCore.csproj" />
+	<ProjectReference Include="..\DocumentTaggerCore\DocumentTaggerCore.csproj" />
   </ItemGroup>
+	
+	<Target Name="PostPublish" BeforeTargets="BeforePublish">
+		<Exec Command="Stop-Service -Name &quot;Document Tagger&quot;" />
+	</Target>
+	<Target Name="PostPublish" AfterTargets="AfterPublish">
+		<Exec Command="Stop-Service -Name &quot;Document Tagger&quot;" />
+	</Target>
 </Project>
+

@@ -1,16 +1,23 @@
-﻿namespace DocumentTaggerCore.Model
-{
-    public class Rule
-    {
-        public List<KeyWord> Keywords { get; set; }
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 
-        public List<string> Results { get; set; }
+namespace DocumentTaggerCore.Model
+{
+    public partial class Rule : ObservableObject
+    {
+        [ObservableProperty]
+        private ObservableCollection<KeyWord> _keywords;
+
+        [ObservableProperty]
+        private ObservableCollection<string> _results;
 
         public Rule()
         {
-            Keywords = new List<KeyWord>();
-            Results = new List<string>();
+            Keywords = new ObservableCollection<KeyWord>();
+            Results = new ObservableCollection<string>();
         }
+
+        public override string ToString() => Keywords?.FirstOrDefault()?.Key ?? "<null>";
 
     }
 }

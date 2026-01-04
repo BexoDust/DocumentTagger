@@ -6,7 +6,7 @@ namespace DocumentTagger.Tests
     public class PdfContentExtractorTests
     {
         [TestMethod()]
-        [DeploymentItem("TestFiles")]
+        //[DeploymentItem("TestFiles")]
         public void ExtractFileContentTest()
         {
             string testFile = "TestFiles\\2020-03 IKK Neue Karte Martin.pdf";

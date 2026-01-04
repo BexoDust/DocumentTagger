@@ -2,6 +2,7 @@
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using System;
+using System.IO;
 
 namespace DocumentTagger
 {
@@ -10,17 +11,17 @@ namespace DocumentTagger
         public string ExtractFileContent(string path)
         {
             string result = String.Empty;
-            PdfReader pdfReader = new PdfReader(path);
-            PdfDocument pdfDoc = new PdfDocument(pdfReader);
+            if (Path.GetExtension(path) != ".pdf")
+                return result;
+
+            using PdfReader pdfReader = new(path);
+            using PdfDocument pdfDoc = new(pdfReader);
 
             for (int page = 1; page <= pdfDoc.GetNumberOfPages(); page++)
             {
                 ITextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
                 result += PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(page), strategy);
             }
-
-            pdfDoc.Close();
-            pdfReader.Close();
 
             return result;
         }
