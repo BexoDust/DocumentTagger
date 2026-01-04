@@ -1,4 +1,5 @@
-﻿using DocumentTaggerCore.Model;
+﻿using DocumentTaggerCore;
+using DocumentTaggerCore.Model;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.IO;
@@ -37,7 +38,7 @@ namespace DocumentTagger
 
                         var ruleSet = RuleManager.GetApplicableRules(text, _rules);
                         string docDate = RuleManager.GetDocumentDate(text);
-                        string newName = RuleManager.GetNewFileName(file, docDate, text, ruleSet);
+                        var newName = RuleManager.GetNewFileName(file, docDate, text, ruleSet);
 
                         var result = RuleManager.MoveToSuccessFolder(file, _successFolder, newName);
 

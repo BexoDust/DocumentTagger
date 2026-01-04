@@ -1,6 +1,8 @@
 using DocumentOrganizer.Model;
 using DocumentOrganizer.Services;
 using DocumentOrganizer.ViewModel;
+using Microsoft.Maui.Controls;
+using Syncfusion.Maui.TreeView;
 
 namespace DocumentOrganizer.Views;
 
@@ -18,8 +20,11 @@ public partial class FolderView : ContentPage
         InitializeComponent();
     }
 
-    private async void SfTreeView_ItemDoubleTapped(object sender, Syncfusion.Maui.TreeView.ItemDoubleTappedEventArgs e)
+    private async void SfTreeView_ItemDoubleTapped(object sender, ItemDoubleTappedEventArgs e)
     {
+        if (e?.Node == null)
+            return;
+
         if (e.Node.HasChildNodes)
         {
             e.Node.IsExpanded = !e.Node.IsExpanded;
@@ -34,6 +39,38 @@ public partial class FolderView : ContentPage
         if (newName != null && newName != folder.Name)
         {
             _folderViewModel.RenameFile(folder, newName);
+        }
+    }
+
+    private void DragGestureRecognizer_DragStarting(object sender, DragStartingEventArgs e)
+    {
+        var gesture = sender as DragGestureRecognizer;
+
+        if (gesture?.BindingContext is Folder folderViewModel)
+        {
+            if (folderViewModel.IsFolder)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            e.Data.Properties.Add("folder", folderViewModel);
+            e.Data.Text = "Test Text";
+        }
+    }
+
+    private void DropGestureRecognizer_Drop(object sender, DropEventArgs e)
+    {
+        var gesture = sender as DropGestureRecognizer;
+
+        if (!(gesture?.BindingContext is Folder dropFolder))
+            return;
+
+        var folder = dropFolder.IsFolder ? dropFolder : dropFolder.Parent;
+
+        if (e.Data.Properties["folder"] is Folder dragFolder && folder != null)
+        {
+            _folderViewModel.MoveFile(dragFolder, folder);
         }
     }
 }

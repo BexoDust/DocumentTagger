@@ -7,8 +7,8 @@ namespace DocumentOrganizer.Services
     {
         private readonly WorkerOptions _options;
 
-        public event EventHandler MoveRulesChanged;
-        public event EventHandler RenameRulesChanged;
+        public event EventHandler? MoveRulesChanged;
+        public event EventHandler? RenameRulesChanged;
 
         public RuleService(WorkerOptions options)
         {
@@ -22,20 +22,20 @@ namespace DocumentOrganizer.Services
         public void SaveMoveRules(IEnumerable<Rule> rules)
         {
             JsonIo.SaveObjectToJson(rules, _options.MoveRulePath);
-            MoveRulesChanged?.Invoke(this, null);
+            MoveRulesChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void SaveRenameRules(IEnumerable<Rule> rules)
         {
             JsonIo.SaveObjectToJson(rules, _options.RenameRulePath);
-            RenameRulesChanged?.Invoke(this, null);
+            RenameRulesChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private static List<Rule> GetRules(string rulePath)
         {
             var ruleList = JsonIo.ReadObjectFromJsonFile<List<Rule>>(rulePath);
 
-            return ruleList;
+            return ruleList ?? [];
         }
     }
 }

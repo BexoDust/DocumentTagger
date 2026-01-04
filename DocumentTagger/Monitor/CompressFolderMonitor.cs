@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using DocumentTaggerCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -38,6 +39,8 @@ namespace DocumentTagger
 
                         var oldSize = new FileInfo(file).Length;
                         var targetFile = file.Replace(_watchedFolder, _successFolder);
+                        targetFile = RuleManager.GetUniqueNameInFolder(Path.GetDirectoryName(targetFile), targetFile);
+                        
                         var options = String.Format(_compressorToolOptions, targetFile, file);
                         var info = new ProcessStartInfo(_compressorToolPath)
                         {
@@ -53,8 +56,6 @@ namespace DocumentTagger
 
                         _logger.LogWarning($"{nameof(CompressFolderMonitor)}: Starting compressor");
                         var process = Process.Start(info);
-
-                        targetFile = RuleManager.GetUniqueNameInFolder(Path.GetDirectoryName(targetFile), targetFile);
 
                         _logger.LogWarning($"{nameof(CompressFolderMonitor)}: Waiting for compressor");
                         process.WaitForExit();

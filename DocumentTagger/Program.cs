@@ -34,7 +34,7 @@ namespace DocumentTagger
 #endif
                     });
 
-                    LoggerProviderOptions.RegisterProviderOptions<EventLogSettings, EventLogLoggerProvider>(services);
+                    //LoggerProviderOptions.RegisterProviderOptions<EventLogSettings, EventLogLoggerProvider>(services);
 
                     services.AddWindowsService(options =>
                     {

@@ -20,13 +20,13 @@ namespace DocumentOrganizer.ViewModel
         private ObservableCollection<Rule> _moveRules;  
 
         [ObservableProperty]
-        private Rule _selectedRule;
+        private Rule? _selectedRule;
 
         [ObservableProperty]
-        private KeyWord _selectedKeyword;
+        private KeyWord? _selectedKeyword;
 
         [ObservableProperty]
-        private string _selectedResult;
+        private string? _selectedResult;
 
 
         public RuleEditorViewModel(IRuleService ruleService)
@@ -99,7 +99,7 @@ namespace DocumentOrganizer.ViewModel
         {
             var ruleList = JsonIo.ReadObjectFromJsonFile<List<Rule>>(rulePath);
 
-            return ruleList;
+            return ruleList ?? [];
         }
     }
 }

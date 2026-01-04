@@ -1,51 +1,79 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:views="clr-namespace:DocumentOrganizer.Views"
-             xmlns:viewModel="clr-namespace:DocumentOrganizer.ViewModel"
-             xmlns:model="clr-namespace:DocumentOrganizer.Model"
-             xmlns:syncfusion="clr-namespace:Syncfusion.Maui.TreeView;assembly=Syncfusion.Maui.TreeView"
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"  
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"  
+             xmlns:views="clr-namespace:DocumentOrganizer.Views"  
+             xmlns:viewModel="clr-namespace:DocumentOrganizer.ViewModel"  
+             xmlns:model="clr-namespace:DocumentOrganizer.Model"  
+             xmlns:syncfusion="clr-namespace:Syncfusion.Maui.TreeView;assembly=Syncfusion.Maui.TreeView"  
              xmlns:pdf="clr-namespace:Syncfusion.Maui.PdfViewer;assembly=Syncfusion.Maui.PdfViewer"  
-             x:Class="DocumentOrganizer.Views.FolderView"
-             x:DataType="viewModel:FolderViewModel">
-    <ContentPage.Resources>
-        <DataTemplate x:Key="ItemTemplate" x:DataType="model:Folder">
-            <Grid RowSpacing="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="40" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid Grid.Column="0">
-                    <Image Source="{Binding ImageIcon}"
-                           VerticalOptions="Center"
-                           HorizontalOptions="Center"
-                           HeightRequest="24" 
-                           WidthRequest="24"/>
-                </Grid>
-                <Grid Grid.Column="1">
-                    <Label LineBreakMode="NoWrap" Text="{Binding Name}" VerticalTextAlignment="Center" />
-                </Grid>
-            </Grid>
-        </DataTemplate>
-    </ContentPage.Resources>
-    <ContentPage.Content>
-        <Grid RowDefinitions="*, 60" ColumnDefinitions="*,*,*">
-            <syncfusion:SfTreeView x:Name="ScanFolder" Grid.Row="0" Grid.Column="0" ItemsSource="{Binding ScanFolder}" ChildPropertyName="SubFolders"
-                                   ItemTemplate="{StaticResource ItemTemplate}" AutoExpandMode="RootNodesExpanded" 
-                                   SelectedItem="{Binding SelectedFolder, Mode=TwoWay}" Indentation="15" ItemHeight="32"
-                                   ItemDoubleTapped="SfTreeView_ItemDoubleTapped" />
+             x:Class="DocumentOrganizer.Views.FolderView"  
+             x:DataType="viewModel:FolderViewModel">  
+    <ContentPage.Resources>  
+        <DataTemplate x:Key="ItemTemplate" x:DataType="model:Folder">  
+            <Grid RowSpacing="0" ColumnDefinitions="40,*">  
+                <Grid.GestureRecognizers>  
+                    <DragGestureRecognizer CanDrag="True" DragStarting="DragGestureRecognizer_DragStarting" />  
+                    <DropGestureRecognizer AllowDrop="True" Drop="DropGestureRecognizer_Drop" />  
+                </Grid.GestureRecognizers>  
+                <Grid Grid.Column="0">  
+                    <Image Source="{Binding ImageIcon}"  
+                           VerticalOptions="Center"  
+                           HorizontalOptions="Center"  
+                           HeightRequest="24"   
+                           WidthRequest="24"/>  
+                </Grid>  
+                <Grid Grid.Column="1" ColumnDefinitions="*, Auto">  
+                    <Label Grid.Column="0" LineBreakMode="NoWrap" Text="{Binding Name}" VerticalTextAlignment="Center">  
+                        <Label.Style>  
+                            <Style TargetType="Label">  
+                                <Style.Triggers>  
+                                    <DataTrigger Binding="{Binding FilesInSubfolders}" TargetType="Label" Value="0">  
+                                        <Setter Property="TextColor" Value="{StaticResource Gray500}" />  
+                                    </DataTrigger>  
+                                    <DataTrigger Binding="{Binding AllFilesInSubfoldersChecked}" TargetType="Label" Value="True">  
+                                        <Setter Property="TextColor" Value="{StaticResource Yellow200Accent}" />  
+                                    </DataTrigger>  
+                                </Style.Triggers>  
+                            </Style>  
+                        </Label.Style>  
+                    </Label>  
+                    <Label Grid.Column="1" LineBreakMode="NoWrap" Text="{Binding FilesInSubfoldersString}" VerticalTextAlignment="Center"  
+                           IsVisible="{Binding IsFolder}" HorizontalTextAlignment="Start" />  
+                    <Label Grid.Column="1" LineBreakMode="NoWrap" Text="{Binding FileSizeString}" VerticalTextAlignment="Center"  
+                           IsVisible="{Binding IsFile}" TextColor="{StaticResource Gray500}" />  
+                </Grid>  
+            </Grid>  
+        </DataTemplate>  
+    </ContentPage.Resources>  
+    <ContentPage.Content>  
+        <Grid RowDefinitions="*, 60" ColumnDefinitions="*,*,*">  
+            <syncfusion:SfTreeView x:Name="ScanFolder" Grid.Row="0" Grid.Column="0" ItemsSource="{Binding ScanFolder, Mode=TwoWay}" ChildPropertyName="SubFolders"  
+                                   ItemTemplate="{StaticResource ItemTemplate}" AutoExpandMode="RootNodesExpanded"   
+                                   SelectedItem="{Binding SelectedFolder, Mode=TwoWay}" Indentation="15" ItemHeight="32"  
+                                   ItemDoubleTapped="SfTreeView_ItemDoubleTapped"  
+                                   NotificationSubscriptionMode="CollectionChange">  
+            </syncfusion:SfTreeView>  
+            <StackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalOptions="StartAndExpand">  
+                <Button Text="Rebuild Folders" Margin="5" HeightRequest="35"  
+                        Command="{Binding CopyFolderStructureFromTargetToScanCommand}" />  
 
-            <Button Grid.Row="1" Grid.Column="0" Text="Rebuild Folders" Margin="5" HeightRequest="30"
-                    Command="{Binding CopyFolderStructureFromTargetToScanCommand}" />
+                <Button Text="Delete Selected File" Margin="5" HeightRequest="35"  
+                        Command="{Binding DeleteSelectedFolderCommand}"/>  
 
-            <syncfusion:SfTreeView x:Name="TargetFolder" Grid.Column="1" ItemsSource="{Binding TargetFolder}" ChildPropertyName="SubFolders"
-                                   ItemTemplate="{StaticResource ItemTemplate}" AutoExpandMode="RootNodesExpanded" 
-                                   SelectedItem="{Binding SelectedFolder, Mode=TwoWay}" Indentation="15" ItemHeight="32"
-                                   ItemDoubleTapped="SfTreeView_ItemDoubleTapped" />
+                <Button Text="Move Files to Target" Margin="5" HeightRequest="35"  
+                        Command="{Binding MoveFilesFromScanToTargetCommand}"/>  
 
-            <pdf:SfPdfViewer x:Name="PdfViewer" Grid.Row="0" Grid.RowSpan="2" Grid.Column="2"
-                             DocumentSource="{Binding PdfFileStream}" EnableTextSelection="False" />
+            </StackLayout>  
 
-        </Grid>
-    </ContentPage.Content>
+            <syncfusion:SfTreeView x:Name="TargetFolder" Grid.Column="1" ItemsSource="{Binding TargetFolder, Mode=TwoWay}" ChildPropertyName="SubFolders"  
+                                   ItemTemplate="{StaticResource ItemTemplate}" AutoExpandMode="RootNodesExpanded"   
+                                   SelectedItem="{Binding SelectedFolder, Mode=TwoWay}" Indentation="15" ItemHeight="32"  
+                                   ItemDoubleTapped="SfTreeView_ItemDoubleTapped"  
+                                   NotificationSubscriptionMode="CollectionChange" />  
+
+            <pdf:SfPdfViewer x:Name="PdfViewer" Grid.Row="0" Grid.RowSpan="2" Grid.Column="2"  
+                             DocumentSource="{Binding PdfFileStream}" EnableTextSelection="False" />  
+
+        </Grid>  
+    </ContentPage.Content>  
 </ContentPage>

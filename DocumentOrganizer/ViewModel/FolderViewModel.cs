@@ -1,8 +1,12 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DocumentOrganizer.Model;
 using DocumentOrganizer.Services;
+using DocumentTagger;
+using DocumentTaggerCore;
 using DocumentTaggerCore.Model;
 
 namespace DocumentOrganizer.ViewModel
@@ -21,21 +25,23 @@ namespace DocumentOrganizer.ViewModel
         private ObservableCollection<Folder> _scanFolder;
 
         [ObservableProperty]
+        //[NotifyPropertyChangedFor(nameof(ScanFolder))]
         private ObservableCollection<Folder> _targetFolder;
 
         [ObservableProperty]
-        private Folder _selectedFolder;
+        [NotifyCanExecuteChangedFor(nameof(DeleteSelectedFolderCommand))]
+        private Folder? _selectedFolder;
 
         [ObservableProperty]
-        private Stream _pdfFileStream;
+        private Stream? _pdfFileStream;
 
         public FolderViewModel(WorkerOptions options, IAlertService alertService, IRuleService ruleService)
         {
             _options = options;
             _alertService = alertService;
             _ruleService = ruleService;
-            ScanFolder = new ObservableCollection<Folder>();
-            TargetFolder = new ObservableCollection<Folder>();
+            ScanFolder = [];
+            TargetFolder = [];
 
             _moveRules = _ruleService.GetMoveRules();
             _renameRules = _ruleService.GetRenameRules();
@@ -52,9 +58,29 @@ namespace DocumentOrganizer.ViewModel
             TargetFolder.Add(target);
         }
 
-        private void MoveRulesChanged(object sender, EventArgs e) => _moveRules = _ruleService.GetMoveRules();
+        private void MoveRulesChanged(object? sender, EventArgs e) => _moveRules = _ruleService.GetMoveRules();
 
-        private void RenameRulesChanged(object sender, EventArgs e) => _renameRules = _ruleService.GetRenameRules();
+        private void RenameRulesChanged(object? sender, EventArgs e) => _renameRules = _ruleService.GetRenameRules();
+
+        private bool CanDeleteSelectedFolder() => SelectedFolder?.Parent != null;
+
+        [RelayCommand(CanExecute = nameof(CanDeleteSelectedFolder))]
+        private void DeleteSelectedFolder()
+        {
+            SelectedFolder!.Parent!.SubFolders.Remove(SelectedFolder);
+
+            var path = SelectedFolder.FullPath;
+            SelectedFolder = SelectedFolder.Parent;
+
+            PdfFileStream = null;
+            try
+            {
+                File.Delete(path);
+            }
+            catch (Exception)
+            {
+            }
+        }
 
         [RelayCommand]
         private void CopyFolderStructureFromTargetToScan()
@@ -69,17 +95,53 @@ namespace DocumentOrganizer.ViewModel
             }
 
             Directory.Delete(_options.FolderMoveSuccess, true);
+            Directory.CreateDirectory(_options.FolderMoveSuccess);
 
             CopyFolders(_options.FolderMoveSuccess, TargetFolder.First());
+
+            var scan = new Folder();
+            InitFolder(_options.FolderMoveSuccess, scan);
+            ScanFolder.Clear();
+            ScanFolder.Add(scan);
+        }
+
+
+        [RelayCommand]
+        private void MoveFilesFromScanToTarget()
+        {
+            var scanBasePath = ScanFolder.First().FullPath;
+            var targetBasePath = TargetFolder.First().FullPath;
+
+            var scanFiles = Directory.GetFiles(ScanFolder.First().FullPath, "*.*", SearchOption.AllDirectories);
+
+            foreach (var scanFile in scanFiles)
+            {
+                var newPath = scanFile.Replace(scanBasePath, targetBasePath);
+                var checkDuplicatePath = RuleManager.GetUniqueNameInFolder(Path.GetDirectoryName(newPath), Path.GetFileName(newPath));
+
+                File.Move(scanFile, checkDuplicatePath);
+            }
+
+            var scan = new Folder();
+            InitFolder(_options.FolderMoveSuccess, scan);
+            ScanFolder.Clear();
+            ScanFolder.Add(scan);
         }
 
         private void CopyFolders(string path, Folder folder)
         {
             foreach (var subDir in folder.SubFolders)
             {
-                var subFolder = Path.Combine(path, subDir.Name);
-                Directory.CreateDirectory(subFolder);
+                if (subDir.IsFile)
+                    continue;
 
+                var asd = Path.GetFileName(_options.WatchBaseFolder);
+                if (subDir.Name == Path.GetFileName(_options.WatchBaseFolder))
+                    continue;
+
+                var subFolder = Path.Combine(path, subDir.Name);
+
+                Directory.CreateDirectory(subFolder);
                 CopyFolders(subFolder, subDir);
             }
         }
@@ -88,11 +150,26 @@ namespace DocumentOrganizer.ViewModel
         {
             ClosePdfView();
 
-            var targetPath = Path.Combine(Path.GetDirectoryName(sourceFolder.FullPath), newName);
+            var targetPath = RuleManager.GetUniqueNameInFolder(sourceFolder.Parent!.FullPath, newName);
             File.Move(sourceFolder.FullPath, targetPath);
 
             UpdateRenamedFolder(ScanFolder.First(), sourceFolder.FullPath, targetPath);
             UpdateRenamedFolder(TargetFolder.First(), sourceFolder.FullPath, targetPath);
+        }
+
+        internal void MoveFile(Folder sourceFolder, Folder targetFolder)
+        {
+            ClosePdfView();
+
+            sourceFolder!.Parent!.SubFolders.Remove(sourceFolder);
+            targetFolder.SubFolders.Add(sourceFolder);
+
+            var targetPath = RuleManager.GetUniqueNameInFolder(targetFolder.FullPath, sourceFolder.Name);
+            File.Move(sourceFolder.FullPath, targetPath);
+
+            sourceFolder.FullPath = targetPath;
+            sourceFolder.Parent = targetFolder;
+            sourceFolder.Name = Path.GetFileName(targetPath);
         }
 
         private void UpdateRenamedFolder(Folder baseFolder, string oldPath, string newPath)
@@ -109,16 +186,17 @@ namespace DocumentOrganizer.ViewModel
             }
         }
 
-        private void InitFolder(string path, Folder folder)
+        private void InitFolder(string path, Folder folder, Folder? parent = null)
         {
             var dir = new DirectoryInfo(path);
             folder.Name = dir.Name;
             folder.FullPath = dir.FullName;
+            folder.Parent = parent;
 
             foreach (var subDir in dir.EnumerateDirectories())
             {
                 var subFolder = new Folder();
-                InitFolder(subDir.FullName, subFolder);
+                InitFolder(subDir.FullName, subFolder, folder);
                 folder.SubFolders.Add(subFolder);
             }
 
@@ -127,13 +205,14 @@ namespace DocumentOrganizer.ViewModel
                 var file = new Folder
                 {
                     Name = subFile.Name,
-                    FullPath = subFile.FullName
+                    FullPath = subFile.FullName,
+                    Parent = folder
                 };
                 folder.SubFolders.Add(file);
             }
         }
 
-        private IList<Rule> GetAppliedRules(string fileName)
+        private List<Rule> GetAppliedRules(string fileName)
         {
             var rules = new List<Rule>();
 
@@ -146,13 +225,16 @@ namespace DocumentOrganizer.ViewModel
             return rules;
         }
 
-        partial void OnPdfFileStreamChanging(Stream oldValue, Stream newValue)
+        partial void OnPdfFileStreamChanging(Stream? oldValue, Stream? newValue)
         {
             ClosePdfView();
         }
 
-        partial void OnSelectedFolderChanged(Folder oldValue, Folder newValue)
+        partial void OnSelectedFolderChanged(Folder? oldValue, Folder? newValue)
         {
+            if (!File.Exists(newValue?.FullPath))
+                return;
+
             var ext = Path.GetExtension(newValue.Name);
 
             if (ext == ".pdf")

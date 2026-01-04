@@ -40,6 +40,8 @@ namespace DocumentTagger
             _monitorList.Add(new RenameFolderMonitor(_options.WatchRename, _options.FolderRenameSuccess, renameRuleList, _logger));
             _monitorList.Add(new CompressFolderMonitor(_options.WatchCompress, _options.FolderCompressSuccess,
                 _options.CompressorToolPath, _options.CompressorToolOptions, _logger));
+            _monitorList.Add(new OcrFolderMonitor(_options.WatchOcr, _options.FolderOcrSuccess,
+                _options.OcrToolPath, _options.OcrToolOptions, _logger));
             _monitorList.Add(new MoveFolderMonitor(_options.WatchMove, _options.FolderMoveSuccess, moveRuleList, _logger));
 
             try

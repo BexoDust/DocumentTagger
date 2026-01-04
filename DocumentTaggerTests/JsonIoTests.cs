@@ -57,7 +57,7 @@ namespace DocumentTagger.Tests
         }
 
         [TestMethod()]
-        [DeploymentItem("TestFiles")]
+        //[DeploymentItem("TestFiles")]
         public void DeserializeMultipleTagsTest()
         {
             string testFile = "TestFiles\\ExampleRules.json";

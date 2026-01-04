@@ -6,7 +6,10 @@ using DocumentOrganizer.ViewModel;
 using DocumentOrganizer.Views;
 using DocumentTaggerCore.Model;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Hosting;
 using Syncfusion.Maui.Core.Hosting;
 
 namespace DocumentOrganizer;
@@ -27,7 +30,7 @@ public static class MauiProgram
 			});
 
 		var config = GetConfiguration();
-		WorkerOptions options = config.GetSection("DT").Get<WorkerOptions>();
+		WorkerOptions? options = config.GetSection("DT").Get<WorkerOptions>();
 		builder.Configuration.AddConfiguration(config);
 #if DEBUG
 		builder.Logging.AddDebug();
@@ -35,7 +38,9 @@ public static class MauiProgram
 
 		builder.ConfigureSyncfusionCore();
 
-		builder.Services.AddSingleton(options);
+		if (options != null)
+			builder.Services.AddSingleton(options);
+		
 		builder.Services.AddSingleton<IAlertService, AlertService>();
 		builder.Services.AddSingleton<IRuleService, RuleService>();
 		builder.Services.AddSingleton<RuleEditorViewModel>();
@@ -57,10 +62,15 @@ public static class MauiProgram
 		var a = Assembly.GetExecutingAssembly();
 		using var stream = a.GetManifestResourceStream("DocumentOrganizer.appsettings.json");
 
-		var config = new ConfigurationBuilder()
-					.AddJsonStream(stream)
-					.Build();
+		if (stream != null)
+		{
+			var config = new ConfigurationBuilder()
+						.AddJsonStream(stream)
+						.Build();
 
-		return config;
+			return config;
+		}
+
+		return new ConfigurationBuilder().Build();
 	}
 }
