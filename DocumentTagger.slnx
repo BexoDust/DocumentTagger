@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Solution FileFormatVersion="1.0">
+  <Folder Path="src">
+    <Project Path="DocumentTagger\DocumentTagger.csproj" />
+    <Project Path="DocumentTaggerCore\DocumentTaggerCore.csproj" />
+    <Project Path="DocCompressor\DocCompressor.csproj" />
+  </Folder>
+  <Folder Path="ui">
+    <Project Path="DocumentOrganizer\DocumentOrganizer.csproj" />
+  </Folder>
+  <Folder Path="test">
+    <Project Path="DocumentTaggerTests\DocumentTaggerTests.csproj" />
+  </Folder>
+</Solution>
