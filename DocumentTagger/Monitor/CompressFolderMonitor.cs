@@ -50,9 +50,13 @@ namespace DocumentTagger
                             RedirectStandardInput = true,
                             RedirectStandardOutput = true,
                             CreateNoWindow = true,
-                            ErrorDialog = false,
-                            WindowStyle = ProcessWindowStyle.Hidden
+                            ErrorDialog = false
                         };
+
+                        if (OperatingSystem.IsWindows())
+                        {
+                            info.WindowStyle = ProcessWindowStyle.Hidden;
+                        }
 
                         _logger.LogWarning($"{nameof(CompressFolderMonitor)}: Starting compressor");
                         var process = Process.Start(info);

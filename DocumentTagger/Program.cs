@@ -1,3 +1,4 @@
+using System;
 using DocumentTaggerCore.Model;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,32 +17,47 @@ namespace DocumentTagger
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureServices((hostContext, services) =>
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            var builder = Host.CreateDefaultBuilder(args);
+
+            if (OperatingSystem.IsLinux())
+            {
+                builder = builder.UseSystemd();
+            }
+
+            builder.ConfigureServices((hostContext, services) =>
+            {
+                IConfiguration configuration = hostContext.Configuration;
+
+                WorkerOptions options = configuration.GetSection("DT").Get<WorkerOptions>();
+
+                services.AddLogging(builder =>
                 {
-                    IConfiguration configuration = hostContext.Configuration;
-
-                    WorkerOptions options = configuration.GetSection("DT").Get<WorkerOptions>();
-
-                    services.AddLogging(builder =>
-                    {
-                        builder.AddConfiguration(configuration.GetSection("Logging"))
-                          .AddSerilog(new LoggerConfiguration().WriteTo.File(options.LogPath).CreateLogger())
-                          .AddConsole();
+                    builder.AddConfiguration(configuration.GetSection("Logging"))
+                      .AddSerilog(new LoggerConfiguration().WriteTo.File(options.LogPath).CreateLogger())
+                      .AddConsole();
 #if DEBUG
-                        builder.AddDebug();
+                    builder.AddDebug();
 #endif
-                    });
+                });
 
-                    //LoggerProviderOptions.RegisterProviderOptions<EventLogSettings, EventLogLoggerProvider>(services);
+                //LoggerProviderOptions.RegisterProviderOptions<EventLogSettings, EventLogLoggerProvider>(services);
 
+                if (OperatingSystem.IsWindows())
+                {
                     services.AddWindowsService(options =>
                     {
                         options.ServiceName = "Document Tagger Service";
                     });
-                    services.AddSingleton(options);
-                    services.AddHostedService<Worker>();
-                });
+                }
+
+                services.AddSingleton(options);
+                services.AddHostedService<Worker>();
+            });
+
+            return builder;
+        }
+
     }
 }

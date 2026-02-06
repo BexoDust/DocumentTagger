@@ -84,9 +84,44 @@ namespace DocumentTagger.Monitor
         /// </remarks>
         static public List<Process> WhoIsLocking(string path)
         {
+            // Linux fallback: use lsof to find PIDs locking the file
+            if (!OperatingSystem.IsWindows())
+            {
+                var processes = new List<Process>();
+                try
+                {
+                    var psi = new ProcessStartInfo("lsof", $"-t -- \"{path}\"")
+                    {
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+
+                    using (var p = Process.Start(psi))
+                    {
+                        if (p != null)
+                        {
+                            string output = p.StandardOutput.ReadToEnd();
+                            p.WaitForExit();
+                            var lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                            foreach (var line in lines)
+                            {
+                                if (int.TryParse(line.Trim(), out int pid))
+                                {
+                                    try { processes.Add(Process.GetProcessById(pid)); } catch { }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch { }
+
+                return processes;
+            }
+
             uint handle;
             string key = Guid.NewGuid().ToString();
-            List<Process> processes = new List<Process>();
+            List<Process> processesWin = new List<Process>();
 
             int res = RmStartSession(out handle, 0, key);
 
@@ -123,7 +158,7 @@ namespace DocumentTagger.Monitor
 
                     if (res == 0)
                     {
-                        processes = new List<Process>((int)pnProcInfo);
+                        processesWin = new List<Process>((int)pnProcInfo);
 
                         // Enumerate all of the results and add them to the 
                         // list to be returned
@@ -131,7 +166,7 @@ namespace DocumentTagger.Monitor
                         {
                             try
                             {
-                                processes.Add(Process.GetProcessById(processInfo[i].Process.dwProcessId));
+                                processesWin.Add(Process.GetProcessById(processInfo[i].Process.dwProcessId));
                             }
                             // catch the error -- in case the process is no longer running
                             catch (ArgumentException) { }
@@ -148,7 +183,7 @@ namespace DocumentTagger.Monitor
                 RmEndSession(handle);
             }
 
-            return processes;
+            return processesWin;
         }
     }
 }

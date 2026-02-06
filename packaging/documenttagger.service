@@ -1,0 +1,23 @@
+[Unit]
+Description=Document Tagger Service
+After=network.target
+
+[Service]
+Type=simple
+# Set user/group to run the service under. Create the user or keep as root if desired.
+User=documenttagger
+Group=documenttagger
+Restart=on-failure
+RestartSec=10
+# ExecStart: adjust depending on whether you publish as single-file or framework-dependent.
+# Framework-dependent example:
+ExecStart=/usr/bin/dotnet /opt/documenttagger/DocumentTagger.dll
+# Single-file example (uncomment if used):
+# ExecStart=/opt/documenttagger/DocumentTagger
+WorkingDirectory=/opt/documenttagger
+StandardOutput=journal
+StandardError=journal
+Environment=DOTNET_ENVIRONMENT=Production
+
+[Install]
+WantedBy=multi-user.target
