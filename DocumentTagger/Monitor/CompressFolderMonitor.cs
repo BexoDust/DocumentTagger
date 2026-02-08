@@ -41,7 +41,7 @@ namespace DocumentTagger
                         var targetFile = file.Replace(_watchedFolder, _successFolder);
                         targetFile = RuleManager.GetUniqueNameInFolder(Path.GetDirectoryName(targetFile), targetFile);
                         
-                        var options = String.Format(_compressorToolOptions, targetFile, file);
+                        var options = string.Format(_compressorToolOptions, targetFile, file);
                         var info = new ProcessStartInfo(_compressorToolPath)
                         {
                             Arguments = options,
@@ -78,7 +78,7 @@ namespace DocumentTagger
                             }
                             else
                             {
-                                string message = $"Compressed: {Path.GetFileName(file)} ({(newSize / (double)oldSize):P})";
+                                string message = $"Compressed: {Path.GetFileName(file)} ({newSize / (double)oldSize:P})";
                                 _logger.LogInformation(message);
                             }
 

@@ -90,6 +90,13 @@ namespace DocumentTagger
                     return;
                 }
 
+                // Wait until file appears to be fully written (size/last write time stable)
+                if (!WaitForFileReady(filePath, TimeSpan.FromSeconds(60)))
+                {
+                    _logger.LogWarning($"{this.GetType().Name}: File {filePath} was not stable within timeout. Skipping.");
+                    return;
+                }
+
                 if (!_inputQueue.Contains(filePath) && File.Exists(filePath))
                 {
                     AddBreakLine();
@@ -99,6 +106,61 @@ namespace DocumentTagger
                 }
             }
             var consumer = Task.Run(() => ConsumeNewFile());
+        }
+
+        /// <summary>
+        /// Wait until file size and last write time remain stable over a few checks.
+        /// This helps avoid processing files that are still being written by other processes.
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        protected bool WaitForFileReady(string filePath, TimeSpan timeout)
+        {
+            try
+            {
+                var checkInterval = TimeSpan.FromMilliseconds(500);
+                var stableCountNeeded = 3;
+                int stableCount = 0;
+
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+
+                long lastSize = -1;
+                DateTime lastWrite = DateTime.MinValue;
+
+                while (sw.Elapsed < timeout)
+                {
+                    if (!File.Exists(filePath))
+                        return false;
+
+                    var fi = new FileInfo(filePath);
+                    long size = fi.Length;
+                    DateTime write = fi.LastWriteTimeUtc;
+
+                    if (size == lastSize && write == lastWrite)
+                    {
+                        stableCount++;
+                        if (stableCount >= stableCountNeeded)
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        stableCount = 0;
+                        lastSize = size;
+                        lastWrite = write;
+                    }
+
+                    Thread.Sleep(checkInterval);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, $"{this.GetType().Name}: Error while waiting for file ready: {filePath}");
+            }
+
+            return false;
         }
 
         private void AddBreakLine()
