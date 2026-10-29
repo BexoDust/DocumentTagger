@@ -82,7 +82,8 @@ namespace DocumentTagger
                         }
                         else
                         {
-                            _logger.LogError($"No text recognized for: {targetFile}");
+                            _logger.LogWarning($"No text recognized for: {targetFile}");
+                            RuleManager.TryMoveFile(file, targetFile);
                         }
                     }
                     catch (Exception ex)

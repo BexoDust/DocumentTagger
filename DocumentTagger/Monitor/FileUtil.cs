@@ -88,6 +88,13 @@ namespace DocumentTagger.Monitor
             if (!OperatingSystem.IsWindows())
             {
                 var processes = new List<Process>();
+                
+                // If the file doesn't exist, it's not locked by anything
+                if (!System.IO.File.Exists(path))
+                {
+                    return processes;
+                }
+                
                 try
                 {
                     var psi = new ProcessStartInfo("lsof", $"-t -- \"{path}\"")
